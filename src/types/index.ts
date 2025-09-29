@@ -13,18 +13,7 @@ export interface CartItem {
   quantity: number;
 }
 
-export interface User {
-  id: number;
-  name: string;
-  email: string;
-  address?: string;
-  phone?: string;
-}
 
-export interface AuthState {
-  isAuthenticated: boolean;
-  user: User | null;
-}
 
 export interface CartState {
   items: CartItem[];

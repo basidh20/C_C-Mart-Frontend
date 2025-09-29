@@ -333,8 +333,8 @@ const ProductPage: React.FC = () => {
               }}
             >
               <p style={{ margin: 0, color: "#856404" }}>
-                📦⚠️🔄 This item is currently out of stock. We're working hard
-                to restock it soon! Check back later or add it to your wishlist.
+                ⚠️ This item is currently out of stock. We're working hard to
+                restock it soon! Check back later or add it to your wishlist.
               </p>
             </div>
           )}

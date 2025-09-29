@@ -45,17 +45,17 @@ const CheckoutPage: React.FC = () => {
       clearCart();
 
       // Show delivery tracking alert
-      alert(`��� Order Confirmed! 
+      alert(`✅ Order Confirmed! 
       
 Order Details:
 • Order ID: #CCM${Date.now()}
 • Total: Rs. ${finalTotal.toFixed(2)}
 • Delivery Address: ${formData.address}, ${formData.city}
 
-��� Delivery Information:
+🚚 Delivery Information:
 Your order is being prepared and will be delivered within 2-3 business days.
 
-��� You will receive SMS/Email updates at:
+📱 You will receive SMS/Email updates at:
 • Phone: ${formData.phone}
 • Email: ${formData.email}
 
@@ -64,7 +64,7 @@ Track your delivery:
 • Dispatch: 2-4 hours  
 • Delivery: 1-3 days
 
-Thank you for shopping with C-C Mart! ���`);
+Thank you for shopping with C-C Mart! 🌟`);
 
       navigate("/");
     }, 2000);
@@ -92,7 +92,7 @@ Thank you for shopping with C-C Mart! ���`);
 
   return (
     <div style={{ padding: "2rem", maxWidth: "1200px", margin: "0 auto" }}>
-      <h1>��� Checkout</h1>
+      <h1>🛒 Checkout</h1>
 
       <div
         style={{
@@ -110,7 +110,7 @@ Thank you for shopping with C-C Mart! ���`);
           >
             <div>
               <h2 style={{ color: "#2d5016", marginBottom: "1rem" }}>
-                ��� Contact Information
+                📞 Contact Information
               </h2>
               <div
                 style={{
@@ -185,7 +185,7 @@ Thank you for shopping with C-C Mart! ���`);
 
             <div>
               <h2 style={{ color: "#2d5016", marginBottom: "1rem" }}>
-                ��� Delivery Address
+                🏠 Delivery Address
               </h2>
               <input
                 type="text"
@@ -240,7 +240,7 @@ Thank you for shopping with C-C Mart! ���`);
 
             <div>
               <h2 style={{ color: "#2d5016", marginBottom: "1rem" }}>
-                ��� Payment Method
+                💳 Payment Method
               </h2>
               <select
                 name="paymentMethod"
@@ -274,7 +274,7 @@ Thank you for shopping with C-C Mart! ���`);
                 marginTop: "1rem",
               }}
             >
-              {isProcessing ? "⏳ Processing..." : "��� Place Order"}
+              {isProcessing ? "⏳ Processing..." : "✅ Place Order"}
             </button>
           </form>
         </div>
@@ -291,7 +291,7 @@ Thank you for shopping with C-C Mart! ���`);
             }}
           >
             <h2 style={{ color: "#2d5016", marginBottom: "1rem" }}>
-              ��� Order Summary
+              📋 Order Summary
             </h2>
 
             <div style={{ marginBottom: "1rem" }}>
@@ -373,11 +373,11 @@ Thank you for shopping with C-C Mart! ���`);
               }}
             >
               <p style={{ margin: 0, fontSize: "0.9rem", color: "#2d5016" }}>
-                ��� <strong>Delivery Information:</strong>
+                🚚 <strong>Delivery Information:</strong>
                 <br />
                 Expected delivery: 2-3 business days
                 <br />
-                ��� You'll receive tracking updates via SMS & Email
+                📱 You'll receive tracking updates via SMS & Email
               </p>
             </div>
           </div>

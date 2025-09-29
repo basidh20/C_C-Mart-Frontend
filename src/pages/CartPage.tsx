@@ -37,7 +37,7 @@ const CartPage: React.FC = () => {
             borderRadius: "8px",
           }}
         >
-          <h1>🛒💫🌟 Your Cart is Empty</h1>
+          <h1>🛒 Your Cart is Empty</h1>
           <p
             style={{ fontSize: "1.2rem", color: "#666", marginBottom: "2rem" }}
           >
@@ -56,7 +56,7 @@ const CartPage: React.FC = () => {
               fontSize: "1.1rem",
             }}
           >
-            🌟🛒✨ Start Shopping
+            🛒 Start Shopping
           </Link>
         </div>
       </div>
@@ -73,7 +73,7 @@ const CartPage: React.FC = () => {
           marginBottom: "2rem",
         }}
       >
-        <h1>🛒🌟💫 Your Shopping Cart</h1>
+        <h1>🛒 Your Shopping Cart</h1>
         <button
           onClick={clearCart}
           style={{
@@ -317,7 +317,7 @@ const CartPage: React.FC = () => {
             cursor: "pointer",
           }}
         >
-          �� Proceed to Checkout
+          Proceed to Checkout
         </button>
       </div>
     </div>

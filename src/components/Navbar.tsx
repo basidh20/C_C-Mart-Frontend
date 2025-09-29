@@ -1,24 +1,17 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
-import { useAuth } from "../context/AuthContext";
 
 const Navbar: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
   const { state: cartState } = useCart();
-  const { state: authState, logout } = useAuth();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchTerm.trim()) {
       navigate(`/?search=${encodeURIComponent(searchTerm)}`);
     }
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate("/");
   };
 
   const cartItemCount = cartState.items.reduce(
@@ -55,7 +48,7 @@ const Navbar: React.FC = () => {
             fontWeight: "bold",
           }}
         >
-          🌾🏪🌱 C-C Mart
+          C-C Mart
         </Link>
 
         <form
@@ -112,83 +105,6 @@ const Navbar: React.FC = () => {
           >
             🛒 Cart ({cartItemCount})
           </Link>
-
-          {authState.isAuthenticated ? (
-            <div
-              style={{
-                color: "white",
-                display: "flex",
-                alignItems: "center",
-                gap: "1rem",
-              }}
-            >
-              <span>👋 Hello, {authState.user?.name}</span>
-              <button
-                onClick={handleLogout}
-                style={{
-                  background: "transparent",
-                  color: "white",
-                  border: "2px solid #7ba428",
-                  padding: "0.5rem 1rem",
-                  borderRadius: "20px",
-                  cursor: "pointer",
-                  fontWeight: "500",
-                  transition: "all 0.3s ease",
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.background = "#7ba428";
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.background = "transparent";
-                }}
-              >
-                🚪 Logout
-              </button>
-            </div>
-          ) : (
-            <div style={{ display: "flex", gap: "1rem" }}>
-              <Link
-                to="/login"
-                style={{
-                  color: "white",
-                  textDecoration: "none",
-                  padding: "0.5rem 1rem",
-                  border: "2px solid #7ba428",
-                  borderRadius: "20px",
-                  transition: "all 0.3s ease",
-                  fontWeight: "500",
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.background = "#7ba428";
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.background = "transparent";
-                }}
-              >
-                🔑 Login
-              </Link>
-              <Link
-                to="/signup"
-                style={{
-                  color: "white",
-                  textDecoration: "none",
-                  background: "#7ba428",
-                  padding: "0.5rem 1rem",
-                  borderRadius: "20px",
-                  transition: "all 0.3s ease",
-                  fontWeight: "500",
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.background = "#689520";
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.background = "#7ba428";
-                }}
-              >
-                ✨ Sign Up
-              </Link>
-            </div>
-          )}
         </div>
       </div>
     </nav>
