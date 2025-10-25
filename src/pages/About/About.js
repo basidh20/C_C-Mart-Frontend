@@ -469,7 +469,7 @@ function About() {
                     Phone
                   </Typography>
                   <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                    +94 37 222 3456
+                    +94711390715
                   </Typography>
                 </Box>
               </Box>

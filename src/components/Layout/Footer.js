@@ -142,13 +142,13 @@ function Footer() {
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Phone sx={{ fontSize: 20, color: 'secondary.main' }} />
                 <Typography variant="body2" sx={{ color: 'grey.400' }}>
-                  +94 37 222 3456
+                  +94711390715
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Email sx={{ fontSize: 20, color: 'secondary.main' }} />
                 <Typography variant="body2" sx={{ color: 'grey.400' }}>
-                  info@ccmart.lk
+                  ccmart09@gmail.com
                 </Typography>
               </Box>
             </Stack>

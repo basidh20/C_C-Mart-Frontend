@@ -68,7 +68,7 @@ function Returns() {
   const returnProcess = [
     {
       step: '1. Contact Us',
-      description: 'Call +94 37 222 3456 or WhatsApp +94 77 123 4567 to report the issue',
+      description: 'Call +94711390715 or WhatsApp +94 77 123 4567 to report the issue',
       icon: <ContactSupport color="primary" />,
     },
     {
@@ -348,7 +348,7 @@ function Returns() {
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <ContactSupport sx={{ mr: 1 }} />
                 <Typography variant="body1">
-                  Call: +94 37 222 3456
+                  Call: +94711390715
                 </Typography>
               </Box>
             </Grid>

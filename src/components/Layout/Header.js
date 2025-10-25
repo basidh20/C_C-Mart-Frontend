@@ -159,11 +159,11 @@ function Header() {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <Phone sx={{ fontSize: 16 }} />
-                <Typography variant="caption">+94 37 222 3456</Typography>
+                <Typography variant="caption">+94711390715</Typography>
               </Box>
               <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 0.5 }}>
                 <EmailOutlined sx={{ fontSize: 16 }} />
-                <Typography variant="caption">info@ccmart.lk</Typography>
+                <Typography variant="caption">ccmart09@gmail.com</Typography>
               </Box>
             </Box>
           </Box>

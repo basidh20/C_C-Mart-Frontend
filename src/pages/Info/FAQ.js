@@ -36,7 +36,7 @@ function FAQ() {
       faqs: [
         {
           question: 'How do I place an order?',
-          answer: 'You can place orders through our website, by calling +94 37 222 3456, or by sending your grocery list via WhatsApp to +94 77 123 4567. Simply browse our products, add items to your cart, and proceed to checkout.',
+          answer: 'You can place orders through our website, by calling +94711390715, or by sending your grocery list via WhatsApp to +94 77 123 4567. Simply browse our products, add items to your cart, and proceed to checkout.',
         },
         {
           question: 'What is the minimum order amount?',
@@ -120,7 +120,7 @@ function FAQ() {
     {
       title: 'Call Us',
       description: 'Speak directly with our team',
-      contact: '+94 37 222 3456',
+      contact: '+94711390715',
       icon: <Phone color="primary" />,
     },
     {
@@ -132,7 +132,7 @@ function FAQ() {
     {
       title: 'Email',
       description: 'Detailed inquiries',
-      contact: 'info@ccmart.lk',
+      contact: 'ccmart09@gmail.com',
       icon: <Email color="primary" />,
     },
   ];

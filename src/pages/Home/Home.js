@@ -813,7 +813,7 @@ function Home() {
                   📞 Phone
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                  +94 37 222 3456
+                  +94711390715
                 </Typography>
               </Box>
               <Box sx={{ mb: 3 }}>
@@ -821,7 +821,7 @@ function Home() {
                   📧 Email
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                  info@ccmart.lk
+                  ccmart09@gmail.com
                 </Typography>
               </Box>
               <Button

@@ -43,7 +43,7 @@ function Contact() {
     {
       icon: <Phone sx={{ fontSize: 40 }} color="primary" />,
       title: 'Phone Number',
-      content: '+94 37 222 3456',
+      content: '+94711390715',
       subcontent: 'Hotline Available',
       description: 'Call us for orders, inquiries, or support',
       action: 'Call Now',
@@ -51,7 +51,7 @@ function Contact() {
     {
       icon: <Email sx={{ fontSize: 40 }} color="primary" />,
       title: 'Email Address',
-      content: 'info@ccmart.lk',
+      content: 'ccmart09@gmail.com',
       subcontent: 'support@ccmart.lk',
       description: 'Send us an email for detailed inquiries',
       action: 'Send Email',
@@ -410,7 +410,7 @@ function Contact() {
               }}
               startIcon={<Phone />}
             >
-              Call: +94 37 222 3456
+              Call: +94711390715
             </Button>
             <Button
               variant="contained"

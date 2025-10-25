@@ -259,7 +259,7 @@ function DeliveryInfo() {
               <Alert severity="info" sx={{ mt: 2 }}>
                 <Typography variant="body2">
                   Emergency deliveries available for urgent orders. 
-                  Call +94 37 222 3456 for assistance.
+                  Call +94711390715 for assistance.
                 </Typography>
               </Alert>
             </Paper>
@@ -329,7 +329,7 @@ function DeliveryInfo() {
           <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
             <Chip
               icon={<Phone />}
-              label="Call: +94 37 222 3456"
+              label="Call: +94711390715"
               variant="filled"
               sx={{ bgcolor: 'white', color: 'primary.main' }}
             />
