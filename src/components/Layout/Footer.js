@@ -1,42 +1,23 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   Box, 
   Container, 
   Typography, 
   Grid, 
   Link, 
-  IconButton,
   Divider,
-  TextField,
-  Button,
   Stack,
 } from '@mui/material';
 import { 
-  Facebook, 
-  Twitter, 
-  Instagram, 
-  LinkedIn,
   Email,
   Phone,
   LocationOn,
-  Send,
-  CreditCard,
-  LocalShipping,
   Security,
   Verified,
   Store,
 } from '@mui/icons-material';
 
 function Footer() {
-  const [email, setEmail] = useState('');
-
-  const handleNewsletterSubmit = (e) => {
-    e.preventDefault();
-    // Handle newsletter subscription
-    console.log('Subscribe email:', email);
-    setEmail('');
-  };
-
   return (
     <Box
       component="footer"
@@ -152,59 +133,6 @@ function Footer() {
                 </Typography>
               </Box>
             </Stack>
-
-            {/* Social Media */}
-            <Box>
-              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-                Follow Us
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <IconButton 
-                  sx={{ 
-                    bgcolor: 'rgba(255,255,255,0.1)', 
-                    color: 'white',
-                    '&:hover': { bgcolor: '#1877f2', transform: 'translateY(-2px)' },
-                    transition: 'all 0.3s',
-                  }}
-                  aria-label="Facebook"
-                >
-                  <Facebook />
-                </IconButton>
-                <IconButton 
-                  sx={{ 
-                    bgcolor: 'rgba(255,255,255,0.1)', 
-                    color: 'white',
-                    '&:hover': { bgcolor: '#1da1f2', transform: 'translateY(-2px)' },
-                    transition: 'all 0.3s',
-                  }}
-                  aria-label="Twitter"
-                >
-                  <Twitter />
-                </IconButton>
-                <IconButton 
-                  sx={{ 
-                    bgcolor: 'rgba(255,255,255,0.1)', 
-                    color: 'white',
-                    '&:hover': { bgcolor: '#e4405f', transform: 'translateY(-2px)' },
-                    transition: 'all 0.3s',
-                  }}
-                  aria-label="Instagram"
-                >
-                  <Instagram />
-                </IconButton>
-                <IconButton 
-                  sx={{ 
-                    bgcolor: 'rgba(255,255,255,0.1)', 
-                    color: 'white',
-                    '&:hover': { bgcolor: '#0077b5', transform: 'translateY(-2px)' },
-                    transition: 'all 0.3s',
-                  }}
-                  aria-label="LinkedIn"
-                >
-                  <LinkedIn />
-                </IconButton>
-              </Box>
-            </Box>
           </Grid>
 
           {/* Quick Links */}
@@ -312,81 +240,8 @@ function Footer() {
               </Link>
             </Stack>
           </Grid>
-
-          {/* Newsletter Signup */}
-          <Grid item xs={12} md={4}>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 700, mb: 2 }}>
-              Subscribe to Our Newsletter
-            </Typography>
-            <Typography variant="body2" sx={{ mb: 3, color: 'grey.400', lineHeight: 1.7 }}>
-              Get the latest deals, offers, and updates directly to your inbox!
-            </Typography>
-            <Box component="form" onSubmit={handleNewsletterSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <TextField
-                fullWidth
-                variant="outlined"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    bgcolor: 'rgba(255,255,255,0.1)',
-                    color: 'white',
-                    borderRadius: 2,
-                    '& fieldset': {
-                      borderColor: 'rgba(255,255,255,0.2)',
-                    },
-                    '&:hover fieldset': {
-                      borderColor: 'secondary.main',
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: 'secondary.main',
-                    },
-                  },
-                  '& .MuiInputBase-input::placeholder': {
-                    color: 'rgba(255,255,255,0.5)',
-                  },
-                }}
-              />
-              <Button
-                type="submit"
-                variant="contained"
-                endIcon={<Send />}
-                sx={{
-                  bgcolor: 'secondary.main',
-                  color: 'white',
-                  py: 1.2,
-                  fontWeight: 600,
-                  '&:hover': {
-                    bgcolor: 'secondary.dark',
-                    transform: 'translateY(-2px)',
-                  },
-                  transition: 'all 0.3s',
-                }}
-              >
-                Subscribe Now
-              </Button>
-            </Box>
-          </Grid>
         </Grid>
       </Container>
-
-      {/* Payment Methods */}
-      <Box sx={{ bgcolor: 'rgba(0,0,0,0.3)', py: 2 }}>
-        <Container maxWidth="lg">
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-            <Typography variant="body2" sx={{ color: 'grey.400', mr: 2 }}>
-              We Accept:
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-              <CreditCard sx={{ fontSize: 32, color: 'grey.400' }} />
-              <Typography variant="caption" sx={{ color: 'grey.400' }}>
-                Visa • Mastercard • Amex • PayPal
-              </Typography>
-            </Box>
-          </Box>
-        </Container>
-      </Box>
 
       {/* Bottom Bar */}
       <Box sx={{ bgcolor: 'rgba(0,0,0,0.5)', py: 3 }}>

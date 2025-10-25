@@ -14,7 +14,6 @@ import {
 } from '@mui/material';
 import {
   ShoppingCart,
-  Visibility,
   LocalOffer,
   CheckCircle,
   Warning,
@@ -58,10 +57,6 @@ function EnhancedProductCard({ product, onAddToCart }) {
           boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
           '& .product-image': {
             transform: 'scale(1.1)',
-          },
-          '& .quick-view-btn': {
-            opacity: 1,
-            transform: 'translateY(0)',
           },
         },
       }}
@@ -160,37 +155,6 @@ function EnhancedProductCard({ product, onAddToCart }) {
             transition: 'transform 0.5s ease',
           }}
         />
-        
-        {/* Quick View Button */}
-        <Box
-          className="quick-view-btn"
-          sx={{
-            position: 'absolute',
-            bottom: 12,
-            left: '50%',
-            transform: 'translate(-50%, 20px)',
-            opacity: 0,
-            transition: 'all 0.3s ease',
-          }}
-        >
-          <Button
-            variant="contained"
-            startIcon={<Visibility />}
-            onClick={() => navigate(`/products/${product.id}`)}
-            sx={{
-              bgcolor: 'white',
-              color: 'primary.main',
-              fontWeight: 600,
-              boxShadow: 3,
-              '&:hover': {
-                bgcolor: 'primary.main',
-                color: 'white',
-              },
-            }}
-          >
-            Quick View
-          </Button>
-        </Box>
       </Box>
 
       {/* Product Details */}
