@@ -547,7 +547,6 @@ function About() {
                 }}
               >
                 <Avatar
-                  src="https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=200"
                   sx={{ 
                     width: 100, 
                     height: 100, 
@@ -555,8 +554,13 @@ function About() {
                     mb: 2,
                     border: '4px solid',
                     borderColor: 'primary.main',
+                    bgcolor: '#4CAF50',
+                    fontSize: '2.5rem',
+                    fontWeight: 700,
                   }}
-                />
+                >
+                  CD
+                </Avatar>
                 <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
                   Mr. Chamindu Dewram
                 </Typography>
@@ -587,7 +591,6 @@ function About() {
                 }}
               >
                 <Avatar
-                  src="https://images.pexels.com/photos/3756681/pexels-photo-3756681.jpeg?auto=compress&cs=tinysrgb&w=200"
                   sx={{ 
                     width: 100, 
                     height: 100, 
@@ -595,8 +598,13 @@ function About() {
                     mb: 2,
                     border: '4px solid',
                     borderColor: 'primary.main',
+                    bgcolor: '#FF9800',
+                    fontSize: '2.5rem',
+                    fontWeight: 700,
                   }}
-                />
+                >
+                  SF
+                </Avatar>
                 <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
                   Mrs. Sanduni Fernando
                 </Typography>
@@ -627,7 +635,6 @@ function About() {
                 }}
               >
                 <Avatar
-                  src="https://images.pexels.com/photos/1040881/pexels-photo-1040881.jpeg?auto=compress&cs=tinysrgb&w=200"
                   sx={{ 
                     width: 100, 
                     height: 100, 
@@ -635,8 +642,13 @@ function About() {
                     mb: 2,
                     border: '4px solid',
                     borderColor: 'primary.main',
+                    bgcolor: '#2196F3',
+                    fontSize: '2.5rem',
+                    fontWeight: 700,
                   }}
-                />
+                >
+                  KS
+                </Avatar>
                 <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
                   Mr. Kasun Silva
                 </Typography>
