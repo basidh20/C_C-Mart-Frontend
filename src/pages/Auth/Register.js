@@ -19,13 +19,31 @@ import * as yup from 'yup';
 import { useAuth } from '../../contexts/AuthContext';
 
 const schema = yup.object({
-  firstName: yup.string().required('First name is required'),
-  lastName: yup.string().required('Last name is required'),
+  firstName: yup
+    .string()
+    .required('First name is required')
+    .min(2, 'First name must be at least 2 characters')
+    .max(50, 'First name must not exceed 50 characters')
+    .matches(/^[a-zA-Z\s]+$/, 'First name can only contain letters and spaces')
+    .trim(),
+  lastName: yup
+    .string()
+    .required('Last name is required')
+    .min(2, 'Last name must be at least 2 characters')
+    .max(50, 'Last name must not exceed 50 characters')
+    .matches(/^[a-zA-Z\s]+$/, 'Last name can only contain letters and spaces')
+    .trim(),
   email: yup.string().email('Invalid email').required('Email is required'),
   phone: yup
     .string()
     .required('Phone number is required')
-    .matches(/^[0-9]{10}$/, 'Phone number must be exactly 10 digits'),
+    .matches(/^0[0-9]{9}$/, 'Phone number must start with 0 and be exactly 10 digits')
+    .test('valid-sri-lanka-phone', 'Invalid Sri Lankan phone number', function(value) {
+      if (!value) return false;
+      // Valid Sri Lankan mobile prefixes: 070, 071, 072, 074, 075, 076, 077, 078
+      const validPrefixes = ['070', '071', '072', '074', '075', '076', '077', '078'];
+      return validPrefixes.some(prefix => value.startsWith(prefix));
+    }),
   password: yup
     .string()
     .min(6, 'Password must be at least 6 characters')
@@ -145,7 +163,7 @@ function Register() {
                   autoComplete="tel"
                   placeholder="0771234567"
                   error={!!errors.phone}
-                  helperText={errors.phone?.message || "Enter 10 digit mobile number"}
+                  helperText={errors.phone?.message || "Enter Sri Lankan mobile number (e.g., 0771234567)"}
                 />
               </Grid>
               <Grid item xs={12}>
