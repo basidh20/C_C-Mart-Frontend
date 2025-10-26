@@ -114,6 +114,7 @@ function Checkout() {
         deliveryPhone: formData.phone,
         paymentMethod: formData.paymentMethod,
         deliveryNotes: formData.notes,
+        deliveryFee: deliveryFee,
         items: items.map(item => ({
           product: { id: item.id },
           quantity: item.quantity,

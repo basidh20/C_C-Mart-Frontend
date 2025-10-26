@@ -58,10 +58,10 @@ function DiagnosticPage() {
       }));
     }
   };
-
   const checkBackend = async () => {
     try {
-      const response = await fetch('http://localhost:8081/api/test');
+      const backendBase = (process.env.REACT_APP_API_URL || 'http://localhost:8081/api').replace(/\/$/, '');
+      const response = await fetch(`${backendBase}/test`);
       if (response.ok) {
         setDiagnostics(prev => ({
           ...prev,
@@ -80,6 +80,9 @@ function DiagnosticPage() {
         }));
     }
   };
+
+  // derive backend base URL from env or fallback
+  const backendBase = (process.env.REACT_APP_API_URL || 'http://localhost:8081/api').replace(/\/$/, '');
 
   const checkTheme = () => {
     const root = document.documentElement;
@@ -223,7 +226,7 @@ function DiagnosticPage() {
                 <Typography sx={{ ml: 1 }}>{diagnostics.backend.message}</Typography>
               </Box>
               <Typography variant="body2" color="text.secondary">
-                Expected: http://localhost:8081
+                Expected: {backendBase.replace(/\/api$/, '')}
               </Typography>
               <Chip
                 label={diagnostics.backend.status.toUpperCase()}
@@ -312,7 +315,7 @@ function DiagnosticPage() {
             </ListItemIcon>
             <ListItemText
               primary="Backend not responding?"
-              secondary="Check if backend is running: http://localhost:8081/api/test"
+                secondary={`Check if backend is running: ${backendBase}/test`}
             />
           </ListItem>
           <ListItem>
