@@ -71,14 +71,31 @@ function AdminOrders() {
     try {
       setLoading(true);
       console.log('Fetching orders from backend...');
-      const response = await ordersAPI.getAllOrders();
-      console.log('Orders response:', response.data);
+      console.log('Auth token:', localStorage.getItem('token') ? 'Present' : 'Missing');
+      
+      // Try the standard orders endpoint first (for admin, it returns all orders)
+      let response;
+      try {
+        response = await ordersAPI.getOrders();
+        console.log('Orders from /orders endpoint:', response.data);
+      } catch (err) {
+        console.log('Trying /orders/all endpoint...');
+        response = await ordersAPI.getAllOrders();
+        console.log('Orders from /orders/all endpoint:', response.data);
+      }
+      
       setOrders(response.data || []);
       toast.success(`Loaded ${response.data?.length || 0} orders`);
     } catch (error) {
       console.error('Error fetching orders:', error);
+      console.error('Error status:', error.response?.status);
       console.error('Error details:', error.response?.data);
-      toast.error(error.response?.data?.message || 'Failed to fetch orders');
+      
+      if (error.response?.status === 401) {
+        toast.error('Please login as admin to view orders');
+      } else {
+        toast.error(error.response?.data?.message || 'Failed to fetch orders. Check console for details.');
+      }
       setOrders([]);
     } finally {
       setLoading(false);
