@@ -215,7 +215,7 @@ function Orders() {
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2">
-                      {order.items?.length || 0} items
+                      {(order.orderItems || order.items)?.length || 0} items
                     </Typography>
                   </TableCell>
                   <TableCell>

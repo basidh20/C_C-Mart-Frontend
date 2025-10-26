@@ -81,7 +81,9 @@ function ReportsAnalytics() {
       // Calculate top products from actual order items
       const productSalesMap = {};
       orders.forEach(order => {
-        (order.items || []).forEach(item => {
+        // Handle both 'items' and 'orderItems' for backwards compatibility
+        const orderItems = order.orderItems || order.items || [];
+        orderItems.forEach(item => {
           const productId = item.product?.id;
           if (productId) {
             if (!productSalesMap[productId]) {
