@@ -9,8 +9,12 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Grid,
-  Paper,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Tabs,
+  Tab,
   Table,
   TableBody,
   TableCell,
@@ -20,16 +24,11 @@ import {
   Typography,
   Chip,
   Alert,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Tabs,
-  Tab,
-  Divider,
   CircularProgress,
   Collapse,
   IconButton,
+  Paper,
+  Divider,
 } from '@mui/material';
 import {
   CheckCircle,
@@ -41,7 +40,6 @@ import {
   KeyboardArrowUp,
 } from '@mui/icons-material';
 import api, { ordersAPI } from '../../services/api';
-import { sharedStyles, formatCurrency, formatDateTime, getStatusColor, getStatusLabel } from '../../theme/sharedStyles';
 
 function AdminOrderManagement() {
   const [orders, setOrders] = useState([]);
@@ -66,20 +64,10 @@ function AdminOrderManagement() {
   const fetchOrders = async () => {
     try {
       const response = await ordersAPI.getAllOrders();
-      console.log('Fetched orders:', response.data);
-
-      const ordersData = Array.isArray(response.data) ? response.data : [];
-      if (ordersData.length > 0) {
-        console.log('Sample order structure:', ordersData[0]);
-        console.log('Sample order items:', ordersData[0].orderItems);
-      }
-
-      setOrders(ordersData);
-      setLoading(false);
+      setOrders(Array.isArray(response.data) ? response.data : []);
     } catch (err) {
-      console.error('Error fetching orders:', err);
       setError('Failed to load orders');
-      setOrders([]);
+    } finally {
       setLoading(false);
     }
   };
@@ -88,28 +76,24 @@ function AdminOrderManagement() {
     try {
       const response = await api.get('/delivery-agents/available');
       setDeliveryAgents(response.data);
-    } catch (err) {
-      console.error('Error fetching delivery agents:', err);
+    } catch {
+      setError('Failed to load delivery agents');
     }
   };
 
-  const handleApproveOrder = async (orderId) => {
+  const handleApproveOrder = async orderId => {
     try {
       await api.put(`/orders/${orderId}/approve`);
       setSuccess('Order approved successfully!');
       fetchOrders();
-      setTimeout(() => setSuccess(''), 3000);
-    } catch (err) {
-      console.error('Error approving order:', err);
-      setError(err.response?.data || 'Failed to approve order');
+    } catch {
+      setError('Failed to approve order');
     }
   };
 
-  const handleOpenAssignDialog = (order) => {
+  const handleOpenAssignDialog = order => {
     setSelectedOrder(order);
-    setSelectedAgent('');
     setAssignDialogOpen(true);
-    fetchDeliveryAgents();
   };
 
   const handleCloseAssignDialog = () => {
@@ -123,27 +107,25 @@ function AdminOrderManagement() {
       setError('Please select a delivery agent');
       return;
     }
-
     try {
-      await api.put(`/orders/${selectedOrder.id}/assign`, { agentId: selectedAgent });
+      await api.put(`/orders/${selectedOrder.id}/assign`, {
+        agentId: selectedAgent,
+      });
       setSuccess('Delivery agent assigned successfully!');
       handleCloseAssignDialog();
       fetchOrders();
-      setTimeout(() => setSuccess(''), 3000);
-    } catch (err) {
-      console.error('Error assigning delivery agent:', err);
-      setError(err.response?.data || 'Failed to assign delivery agent');
+    } catch {
+      setError('Failed to assign agent');
     }
   };
 
-  const handleOpenDetailsDialog = async (orderId) => {
+  const handleOpenDetailsDialog = async orderId => {
     setDetailsDialogOpen(true);
     setLoadingDetails(true);
     try {
       const response = await ordersAPI.getOrder(orderId);
       setOrderDetails(response.data);
-    } catch (err) {
-      console.error('Error fetching order details:', err);
+    } catch {
       setError('Failed to load order details');
     } finally {
       setLoadingDetails(false);
@@ -155,47 +137,50 @@ function AdminOrderManagement() {
     setOrderDetails(null);
   };
 
-  const handleUpdateStatus = async (orderId, newStatus) => {
-    try {
-      await api.put(`/orders/${orderId}/status`, { status: newStatus });
-      setSuccess('Order status updated successfully!');
-      fetchOrders();
-      setTimeout(() => setSuccess(''), 3000);
-    } catch (err) {
-      console.error('Error updating order status:', err);
-      setError(err.response?.data || 'Failed to update order status');
-    }
-  };
-
-  const toggleRowExpansion = async (orderId) => {
-    const order = orders.find((o) => o.id === orderId);
-    console.log('Expanding order:', orderId);
-    console.log('Order data:', order);
-    console.log('Order items:', order?.orderItems);
-
-    if (!expandedRows[orderId] && (!order?.orderItems || order.orderItems.length === 0)) {
+  const toggleRowExpansion = async orderId => {
+    const order = orders.find(o => o.id === orderId);
+    if (
+      !expandedRows[orderId] &&
+      (!order?.orderItems || order.orderItems.length === 0)
+    ) {
       try {
-        console.log('Fetching detailed order info for order:', orderId);
         const response = await ordersAPI.getOrder(orderId);
-        console.log('Detailed order response:', response.data);
-
-        setOrders((prevOrders) =>
-          prevOrders.map((o) =>
-            o.id === orderId ? { ...o, orderItems: response.data.orderItems || [] } : o
+        setOrders(prev =>
+          prev.map(o =>
+            o.id === orderId
+              ? { ...o, orderItems: response.data.orderItems }
+              : o
           )
         );
-      } catch (error) {
-        console.error('Error fetching order details:', error);
+      } catch {
+        setError('Failed to fetch order items');
       }
     }
-
-    setExpandedRows((prev) => ({
-      ...prev,
-      [orderId]: !prev[orderId],
-    }));
+    setExpandedRows(prev => ({ ...prev, [orderId]: !prev[orderId] }));
   };
 
-  const getStatusColor = (status) => {
+  const tabContent = [
+    { label: 'Pending', value: 'pending' },
+    { label: 'Approved', value: 'approved' },
+    { label: 'Assigned', value: 'assigned' },
+    { label: 'In Delivery', value: 'in_delivery' },
+    { label: 'All Orders', value: 'all' },
+  ];
+
+  const filterOrdersByStatus = status => {
+    if (status === 'all') return orders;
+    return orders.filter(o => o.status === status);
+  };
+
+  const displayOrders = filterOrdersByStatus(tabContent[currentTab].value);
+
+  const formatCurrency = amount =>
+    new Intl.NumberFormat('en-LK', {
+      style: 'currency',
+      currency: 'LKR',
+    }).format(amount);
+
+  const getStatusColor = status => {
     const colors = {
       pending: 'warning',
       approved: 'info',
@@ -207,60 +192,257 @@ function AdminOrderManagement() {
     return colors[status] || 'default';
   };
 
-  const getStatusIcon = (status) => {
-    const icons = {
-      pending: <Pending />,
-      approved: <CheckCircle />,
-      assigned: <AssignmentInd />,
-      in_delivery: <LocalShipping />,
-      delivered: <CheckCircle />,
-    };
-    return icons[status] || null;
-  };
-
-  const filterOrdersByStatus = (status) => {
-    if (!Array.isArray(orders)) return [];
-    if (status === 'all') return orders;
-    return orders.filter((order) => order.status === status);
-  };
-
-  const tabContent = [
-    { label: 'Pending', value: 'pending' },
-    { label: 'Approved', value: 'approved' },
-    { label: 'Assigned', value: 'assigned' },
-    { label: 'In Delivery', value: 'in_delivery' },
-    { label: 'All Orders', value: 'all' },
-  ];
-
-  const displayOrders = filterOrdersByStatus(tabContent[currentTab].value);
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-LK', {
-      style: 'currency',
-      currency: 'LKR',
-    }).format(amount);
-  };
+  if (loading) {
+    return (
+      <Container sx={{ textAlign: 'center', py: 5 }}>
+        <CircularProgress />
+      </Container>
+    );
+  }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h4" component="h1" sx={{ fontWeight: 700, mb: 3 }}>
+    <Container maxWidth='lg' sx={{ py: 4 }}>
+      <Typography variant='h4' fontWeight={700} mb={3}>
         Order Management
       </Typography>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
+        <Alert severity='error' sx={{ mb: 2 }} onClose={() => setError('')}>
           {error}
         </Alert>
       )}
-
       {success && (
-        <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess('')}>
+        <Alert severity='success' sx={{ mb: 2 }} onClose={() => setSuccess('')}>
           {success}
         </Alert>
       )}
 
-      {/* (Table and dialogs unchanged from your existing version) */}
-      {/* ... */}
+      <Tabs
+        value={currentTab}
+        onChange={(e, v) => setCurrentTab(v)}
+        textColor='primary'
+        indicatorColor='primary'
+        sx={{ mb: 3 }}
+      >
+        {tabContent.map(t => (
+          <Tab key={t.value} label={t.label} />
+        ))}
+      </Tabs>
+
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell />
+              <TableCell>Order ID</TableCell>
+              <TableCell>Customer</TableCell>
+              <TableCell>Date</TableCell>
+              <TableCell>Amount</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell align='right'>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {displayOrders.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} align='center'>
+                  No orders found.
+                </TableCell>
+              </TableRow>
+            ) : (
+              displayOrders.map(order => (
+                <React.Fragment key={order.id}>
+                  <TableRow>
+                    <TableCell>
+                      <IconButton
+                        onClick={() => toggleRowExpansion(order.id)}
+                        size='small'
+                      >
+                        {expandedRows[order.id] ? (
+                          <KeyboardArrowUp />
+                        ) : (
+                          <KeyboardArrowDown />
+                        )}
+                      </IconButton>
+                    </TableCell>
+                    <TableCell>{order.id}</TableCell>
+                    <TableCell>{order.customerName || 'N/A'}</TableCell>
+                    <TableCell>
+                      {new Date(order.createdAt).toLocaleString()}
+                    </TableCell>
+                    <TableCell>{formatCurrency(order.totalAmount)}</TableCell>
+                    <TableCell>
+                      <Chip
+                        label={order.status}
+                        color={getStatusColor(order.status)}
+                      />
+                    </TableCell>
+                    <TableCell align='right'>
+                      {order.status === 'pending' && (
+                        <Button
+                          variant='contained'
+                          color='success'
+                          onClick={() => handleApproveOrder(order.id)}
+                          sx={{ mr: 1 }}
+                        >
+                          Approve
+                        </Button>
+                      )}
+                      {order.status === 'approved' && (
+                        <Button
+                          variant='contained'
+                          color='primary'
+                          onClick={() => handleOpenAssignDialog(order)}
+                          sx={{ mr: 1 }}
+                        >
+                          Assign
+                        </Button>
+                      )}
+                      <Button
+                        variant='outlined'
+                        startIcon={<Visibility />}
+                        onClick={() => handleOpenDetailsDialog(order.id)}
+                      >
+                        View
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Expandable Row */}
+                  <TableRow>
+                    <TableCell colSpan={7} sx={{ p: 0 }}>
+                      <Collapse
+                        in={expandedRows[order.id]}
+                        timeout='auto'
+                        unmountOnExit
+                      >
+                        <Box m={2}>
+                          <Typography
+                            variant='subtitle1'
+                            fontWeight={600}
+                            gutterBottom
+                          >
+                            Order Items
+                          </Typography>
+                          <Divider sx={{ mb: 1 }} />
+                          {order.orderItems && order.orderItems.length > 0 ? (
+                            <Table size='small'>
+                              <TableHead>
+                                <TableRow>
+                                  <TableCell>Product</TableCell>
+                                  <TableCell>Quantity</TableCell>
+                                  <TableCell>Price</TableCell>
+                                </TableRow>
+                              </TableHead>
+                              <TableBody>
+                                {order.orderItems.map(item => (
+                                  <TableRow key={item.id}>
+                                    <TableCell>{item.productName}</TableCell>
+                                    <TableCell>{item.quantity}</TableCell>
+                                    <TableCell>
+                                      {formatCurrency(item.price)}
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          ) : (
+                            <Typography variant='body2' color='text.secondary'>
+                              No items found.
+                            </Typography>
+                          )}
+                        </Box>
+                      </Collapse>
+                    </TableCell>
+                  </TableRow>
+                </React.Fragment>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {/* Assign Agent Dialog */}
+      <Dialog
+        open={assignDialogOpen}
+        onClose={handleCloseAssignDialog}
+        fullWidth
+        maxWidth='sm'
+      >
+        <DialogTitle>Assign Delivery Agent</DialogTitle>
+        <DialogContent>
+          <FormControl fullWidth sx={{ mt: 2 }}>
+            <InputLabel>Select Agent</InputLabel>
+            <Select
+              value={selectedAgent}
+              onChange={e => setSelectedAgent(e.target.value)}
+              label='Select Agent'
+            >
+              {deliveryAgents.map(agent => (
+                <MenuItem key={agent.id} value={agent.id}>
+                  {agent.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseAssignDialog}>Cancel</Button>
+          <Button variant='contained' onClick={handleAssignAgent}>
+            Assign
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* View Details Dialog */}
+      <Dialog
+        open={detailsDialogOpen}
+        onClose={handleCloseDetailsDialog}
+        fullWidth
+        maxWidth='sm'
+      >
+        <DialogTitle>Order Details</DialogTitle>
+        <DialogContent>
+          {loadingDetails ? (
+            <CircularProgress />
+          ) : orderDetails ? (
+            <Box>
+              <Typography variant='body1' sx={{ mb: 1 }}>
+                <strong>Customer:</strong> {orderDetails.customerName}
+              </Typography>
+              <Typography variant='body1' sx={{ mb: 1 }}>
+                <strong>Date:</strong>{' '}
+                {new Date(orderDetails.createdAt).toLocaleString()}
+              </Typography>
+              <Typography variant='body1' sx={{ mb: 2 }}>
+                <strong>Total:</strong>{' '}
+                {formatCurrency(orderDetails.totalAmount)}
+              </Typography>
+              <Divider sx={{ mb: 2 }} />
+              <Typography variant='subtitle1' fontWeight={600}>
+                Items
+              </Typography>
+              {orderDetails.orderItems?.length > 0 ? (
+                orderDetails.orderItems.map(item => (
+                  <Typography key={item.id} variant='body2'>
+                    {item.productName} × {item.quantity} —{' '}
+                    {formatCurrency(item.price)}
+                  </Typography>
+                ))
+              ) : (
+                <Typography variant='body2' color='text.secondary'>
+                  No items found.
+                </Typography>
+              )}
+            </Box>
+          ) : (
+            <Typography>No details available.</Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDetailsDialog}>Close</Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }
