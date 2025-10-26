@@ -49,6 +49,9 @@ function AdminOrderManagement() {
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [selectedAgent, setSelectedAgent] = useState('');
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [orderDetails, setOrderDetails] = useState(null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
 
   useEffect(() => {
     fetchOrders();
@@ -120,6 +123,25 @@ function AdminOrderManagement() {
       console.error('Error assigning delivery agent:', err);
       setError(err.response?.data || 'Failed to assign delivery agent');
     }
+  };
+
+  const handleOpenDetailsDialog = async (orderId) => {
+    setDetailsDialogOpen(true);
+    setLoadingDetails(true);
+    try {
+      const response = await ordersAPI.getOrder(orderId);
+      setOrderDetails(response.data);
+    } catch (err) {
+      console.error('Error fetching order details:', err);
+      setError('Failed to load order details');
+    } finally {
+      setLoadingDetails(false);
+    }
+  };
+
+  const handleCloseDetailsDialog = () => {
+    setDetailsDialogOpen(false);
+    setOrderDetails(null);
   };
 
   const handleUpdateStatus = async (orderId, newStatus) => {
@@ -325,7 +347,15 @@ function AdminOrderManagement() {
                   {new Date(order.createdAt).toLocaleDateString()}
                 </TableCell>
                 <TableCell align="center">
-                  <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                  <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<Visibility />}
+                      onClick={() => handleOpenDetailsDialog(order.id)}
+                    >
+                      View Details
+                    </Button>
                     {order.status === 'pending' && (
                       <Button
                         variant="contained"
@@ -446,6 +476,197 @@ function AdminOrderManagement() {
           >
             Assign
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Order Details Dialog */}
+      <Dialog
+        open={detailsDialogOpen}
+        onClose={handleCloseDetailsDialog}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          Order Details {orderDetails && `#${orderDetails.id}`}
+        </DialogTitle>
+        <DialogContent>
+          {loadingDetails ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+              <CircularProgress />
+            </Box>
+          ) : orderDetails ? (
+            <Box>
+              {/* Order Summary Section */}
+              <Card sx={{ mb: 3, bgcolor: 'background.default' }}>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>
+                    Customer Information
+                  </Typography>
+                  <Grid container spacing={2}>
+                    <Grid item xs={6}>
+                      <Typography variant="body2" color="text.secondary">
+                        Customer Name
+                      </Typography>
+                      <Typography variant="body1" fontWeight="medium">
+                        {orderDetails.user?.name || 'N/A'}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="body2" color="text.secondary">
+                        Email
+                      </Typography>
+                      <Typography variant="body1" fontWeight="medium">
+                        {orderDetails.user?.email || 'N/A'}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="body2" color="text.secondary">
+                        Phone
+                      </Typography>
+                      <Typography variant="body1" fontWeight="medium">
+                        {orderDetails.deliveryPhone || orderDetails.user?.phone || 'N/A'}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="body2" color="text.secondary">
+                        Delivery Address
+                      </Typography>
+                      <Typography variant="body1" fontWeight="medium">
+                        {orderDetails.deliveryAddress || 'N/A'}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="body2" color="text.secondary">
+                        Order Status
+                      </Typography>
+                      <Chip
+                        label={orderDetails.status}
+                        color={getStatusColor(orderDetails.status)}
+                        size="small"
+                        sx={{ mt: 0.5 }}
+                      />
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="body2" color="text.secondary">
+                        Order Date
+                      </Typography>
+                      <Typography variant="body1" fontWeight="medium">
+                        {new Date(orderDetails.createdAt).toLocaleDateString()}
+                      </Typography>
+                    </Grid>
+                    {orderDetails.deliveryAgent && (
+                      <Grid item xs={12}>
+                        <Typography variant="body2" color="text.secondary">
+                          Delivery Agent
+                        </Typography>
+                        <Typography variant="body1" fontWeight="medium">
+                          {orderDetails.deliveryAgent.name}
+                        </Typography>
+                      </Grid>
+                    )}
+                  </Grid>
+                </CardContent>
+              </Card>
+
+              {/* Products Section */}
+              <Typography variant="h6" gutterBottom>
+                Order Items
+              </Typography>
+              <TableContainer component={Paper}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Product Image</TableCell>
+                      <TableCell>Product Name</TableCell>
+                      <TableCell align="right">Unit Price</TableCell>
+                      <TableCell align="center">Quantity</TableCell>
+                      <TableCell align="right">Subtotal</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {orderDetails.items && orderDetails.items.length > 0 ? (
+                      orderDetails.items.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell>
+                            <Box
+                              component="img"
+                              src={item.product?.imageUrl || '/placeholder.png'}
+                              alt={item.product?.name || 'Product'}
+                              sx={{
+                                width: 60,
+                                height: 60,
+                                objectFit: 'cover',
+                                borderRadius: 1,
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" fontWeight="medium">
+                              {item.product?.name || 'N/A'}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="right">
+                            {formatCurrency(item.price)}
+                          </TableCell>
+                          <TableCell align="center">
+                            <Chip label={item.quantity} size="small" />
+                          </TableCell>
+                          <TableCell align="right">
+                            <Typography variant="body2" fontWeight="bold">
+                              {formatCurrency(item.price * item.quantity)}
+                            </Typography>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={5} align="center">
+                          <Typography variant="body2" color="text.secondary">
+                            No items found
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                    <TableRow>
+                      <TableCell colSpan={4} align="right">
+                        <Typography variant="body2">Subtotal:</Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="body2">
+                          {formatCurrency(orderDetails.totalAmount - (orderDetails.deliveryFee || 0))}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell colSpan={4} align="right">
+                        <Typography variant="body2">Delivery Fee:</Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="body2">
+                          {formatCurrency(orderDetails.deliveryFee || 0)}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell colSpan={4} align="right">
+                        <Typography variant="h6">Total Amount:</Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="h6" color="primary" fontWeight="bold">
+                          {formatCurrency(orderDetails.totalAmount)}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Box>
+          ) : (
+            <Typography>No order details available</Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDetailsDialog}>Close</Button>
         </DialogActions>
       </Dialog>
     </Container>

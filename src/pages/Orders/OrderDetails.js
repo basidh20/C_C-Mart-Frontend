@@ -276,7 +276,13 @@ function OrderDetails() {
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
               <Typography variant="body2">Subtotal:</Typography>
               <Typography variant="body2">
-                Rs. {Number(order.totalAmount || 0).toFixed(2)}
+                Rs. {(Number(order.totalAmount || 0) - Number(order.deliveryFee || 0)).toFixed(2)}
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+              <Typography variant="body2">Delivery Fee:</Typography>
+              <Typography variant="body2">
+                Rs. {Number(order.deliveryFee || 0).toFixed(2)}
               </Typography>
             </Box>
             <Divider sx={{ my: 2 }} />
