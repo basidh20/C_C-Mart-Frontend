@@ -63,8 +63,17 @@ function AdminOrderManagement() {
   const fetchOrders = async () => {
     try {
       const response = await ordersAPI.getAllOrders();
+      console.log('Fetched orders:', response.data);
+      
       // Ensure response.data is an array
       const ordersData = Array.isArray(response.data) ? response.data : [];
+      
+      // Log first order to check structure
+      if (ordersData.length > 0) {
+        console.log('Sample order structure:', ordersData[0]);
+        console.log('Sample order items:', ordersData[0].orderItems);
+      }
+      
       setOrders(ordersData);
       setLoading(false);
     } catch (err) {
@@ -140,6 +149,11 @@ function AdminOrderManagement() {
   };
 
   const toggleRowExpansion = (orderId) => {
+    const order = orders.find(o => o.id === orderId);
+    console.log('Expanding order:', orderId);
+    console.log('Order data:', order);
+    console.log('Order items:', order?.orderItems);
+    
     setExpandedRows(prev => ({
       ...prev,
       [orderId]: !prev[orderId]
@@ -436,41 +450,48 @@ function AdminOrderManagement() {
                         <Grid item xs={12} md={6}>
                           <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
                             <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, color: 'primary.main' }}>
-                              Order Items
+                              Order Items ({order.orderItems?.length || 0} items)
                             </Typography>
-                            {order.orderItems && order.orderItems.length > 0 ? (
-                              <Table size="small">
-                                <TableHead>
-                                  <TableRow>
-                                    <TableCell><strong>Product</strong></TableCell>
-                                    <TableCell align="right"><strong>Qty</strong></TableCell>
-                                    <TableCell align="right"><strong>Price</strong></TableCell>
-                                    <TableCell align="right"><strong>Total</strong></TableCell>
-                                  </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                  {order.orderItems.map((item, idx) => (
-                                    <TableRow key={idx}>
-                                      <TableCell>{item.product?.name || 'Product'}</TableCell>
-                                      <TableCell align="right">{item.quantity}</TableCell>
-                                      <TableCell align="right">{formatCurrency(item.price)}</TableCell>
-                                      <TableCell align="right">{formatCurrency(item.price * item.quantity)}</TableCell>
+                            {order.orderItems && Array.isArray(order.orderItems) && order.orderItems.length > 0 ? (
+                              <TableContainer>
+                                <Table size="small">
+                                  <TableHead>
+                                    <TableRow>
+                                      <TableCell><strong>Product</strong></TableCell>
+                                      <TableCell align="right"><strong>Qty</strong></TableCell>
+                                      <TableCell align="right"><strong>Price</strong></TableCell>
+                                      <TableCell align="right"><strong>Total</strong></TableCell>
                                     </TableRow>
-                                  ))}
-                                  <TableRow>
-                                    <TableCell colSpan={3} align="right" sx={{ fontWeight: 700 }}>
-                                      Total Amount:
-                                    </TableCell>
-                                    <TableCell align="right" sx={{ fontWeight: 700, color: 'success.main' }}>
-                                      {formatCurrency(order.totalAmount)}
-                                    </TableCell>
-                                  </TableRow>
-                                </TableBody>
-                              </Table>
+                                  </TableHead>
+                                  <TableBody>
+                                    {order.orderItems.map((item, idx) => (
+                                      <TableRow key={idx}>
+                                        <TableCell>{item.product?.name || item.productName || 'Product'}</TableCell>
+                                        <TableCell align="right">{item.quantity || 0}</TableCell>
+                                        <TableCell align="right">{formatCurrency(item.price || 0)}</TableCell>
+                                        <TableCell align="right">{formatCurrency((item.price || 0) * (item.quantity || 0))}</TableCell>
+                                      </TableRow>
+                                    ))}
+                                    <TableRow>
+                                      <TableCell colSpan={3} align="right" sx={{ fontWeight: 700, borderTop: '2px solid', borderColor: 'divider' }}>
+                                        Total Amount:
+                                      </TableCell>
+                                      <TableCell align="right" sx={{ fontWeight: 700, color: 'success.main', borderTop: '2px solid', borderColor: 'divider' }}>
+                                        {formatCurrency(order.totalAmount || 0)}
+                                      </TableCell>
+                                    </TableRow>
+                                  </TableBody>
+                                </Table>
+                              </TableContainer>
                             ) : (
-                              <Typography variant="body2" color="text.secondary">
-                                No items found
-                              </Typography>
+                              <Box sx={{ py: 2, textAlign: 'center' }}>
+                                <Typography variant="body2" color="text.secondary">
+                                  No items found for this order
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                                  Order ID: {order.id} | Total: {formatCurrency(order.totalAmount || 0)}
+                                </Typography>
+                              </Box>
                             )}
                           </Paper>
                         </Grid>
