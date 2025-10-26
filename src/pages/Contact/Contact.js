@@ -21,7 +21,6 @@ import {
   AccessTime,
   Store,
   LocalShipping,
-  WhatsApp,
   Facebook,
   Instagram,
   CheckCircle,
@@ -78,12 +77,6 @@ function Contact() {
       title: 'Home Delivery',
       description: 'Fast and reliable delivery service to your doorstep. Quality products delivered fresh.',
       features: ['Same-day delivery', 'Multiple delivery zones', 'Track your order'],
-    },
-    {
-      icon: <WhatsApp sx={{ fontSize: 48 }} color="primary" />,
-      title: 'WhatsApp Orders',
-      description: 'Send your grocery list via WhatsApp and we\'ll prepare your order. Quick and convenient!',
-      features: ['Quick response', 'Easy ordering', 'Order confirmation'],
     },
   ];
 
@@ -412,23 +405,6 @@ function Contact() {
             >
               Call: +94711390715
             </Button>
-            <Button
-              variant="contained"
-              size="large"
-              sx={{ 
-                bgcolor: '#25D366',
-                color: 'white',
-                fontWeight: 600,
-                px: 4,
-                py: 1.5,
-                '&:hover': {
-                  bgcolor: '#20BA5A',
-                },
-              }}
-              startIcon={<WhatsApp />}
-            >
-              WhatsApp: +94 77 123 4567
-            </Button>
           </Box>
         </Paper>
 
@@ -454,13 +430,6 @@ function Contact() {
               sx={{ borderRadius: 2 }}
             >
               Instagram
-            </Button>
-            <Button
-              variant="outlined"
-              startIcon={<WhatsApp />}
-              sx={{ borderRadius: 2 }}
-            >
-              WhatsApp
             </Button>
           </Box>
         </Box>
