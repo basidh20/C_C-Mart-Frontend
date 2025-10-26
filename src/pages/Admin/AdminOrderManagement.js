@@ -28,6 +28,8 @@ import {
   Tab,
   Divider,
   CircularProgress,
+  Collapse,
+  IconButton,
 } from '@mui/material';
 import {
   CheckCircle,
@@ -35,6 +37,8 @@ import {
   Pending,
   AssignmentInd,
   Visibility,
+  KeyboardArrowDown,
+  KeyboardArrowUp,
 } from '@mui/icons-material';
 import api, { ordersAPI } from '../../services/api';
 import { sharedStyles, formatCurrency, formatDateTime, getStatusColor, getStatusLabel } from '../../theme/sharedStyles';
@@ -49,6 +53,7 @@ function AdminOrderManagement() {
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [selectedAgent, setSelectedAgent] = useState('');
+  const [expandedRows, setExpandedRows] = useState({});
 
   useEffect(() => {
     fetchOrders();
@@ -132,6 +137,13 @@ function AdminOrderManagement() {
       console.error('Error updating order status:', err);
       setError(err.response?.data || 'Failed to update order status');
     }
+  };
+
+  const toggleRowExpansion = (orderId) => {
+    setExpandedRows(prev => ({
+      ...prev,
+      [orderId]: !prev[orderId]
+    }));
   };
 
   const getStatusColor = (status) => {
@@ -264,6 +276,7 @@ function AdminOrderManagement() {
         <Table>
           <TableHead>
             <TableRow>
+              <TableCell />
               <TableCell><strong>Order ID</strong></TableCell>
               <TableCell><strong>Customer</strong></TableCell>
               <TableCell><strong>Total</strong></TableCell>
@@ -275,9 +288,18 @@ function AdminOrderManagement() {
           </TableHead>
           <TableBody>
             {displayOrders.map((order) => (
-              <TableRow key={order.id}>
-                <TableCell>#{order.id}</TableCell>
-                <TableCell>
+              <React.Fragment key={order.id}>
+                <TableRow hover>
+                  <TableCell>
+                    <IconButton
+                      size="small"
+                      onClick={() => toggleRowExpansion(order.id)}
+                    >
+                      {expandedRows[order.id] ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+                    </IconButton>
+                  </TableCell>
+                  <TableCell>#{order.id}</TableCell>
+                  <TableCell>
                   <Typography 
                     variant="body2"
                     sx={{ 
@@ -373,10 +395,95 @@ function AdminOrderManagement() {
                   </Box>
                 </TableCell>
               </TableRow>
+              {/* Expandable Order Details Row */}
+              <TableRow>
+                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={8}>
+                  <Collapse in={expandedRows[order.id]} timeout="auto" unmountOnExit>
+                    <Box sx={{ margin: 2 }}>
+                      <Typography variant="h6" gutterBottom component="div" sx={{ fontWeight: 600 }}>
+                        Order Details
+                      </Typography>
+                      <Grid container spacing={3}>
+                        {/* Customer & Order Info */}
+                        <Grid item xs={12} md={6}>
+                          <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, color: 'primary.main' }}>
+                              Customer Information
+                            </Typography>
+                            <Typography variant="body2" sx={{ mb: 0.5 }}>
+                              <strong>Name:</strong> {order.user?.name || 'N/A'}
+                            </Typography>
+                            <Typography variant="body2" sx={{ mb: 0.5 }}>
+                              <strong>Email:</strong> {order.user?.email || 'N/A'}
+                            </Typography>
+                            <Typography variant="body2" sx={{ mb: 0.5 }}>
+                              <strong>Phone:</strong> {order.user?.phone || 'N/A'}
+                            </Typography>
+                            <Divider sx={{ my: 1.5 }} />
+                            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, color: 'primary.main' }}>
+                              Delivery Information
+                            </Typography>
+                            <Typography variant="body2" sx={{ mb: 0.5 }}>
+                              <strong>Address:</strong> {order.deliveryAddress || 'N/A'}
+                            </Typography>
+                            <Typography variant="body2" sx={{ mb: 0.5 }}>
+                              <strong>Payment Method:</strong> {order.paymentMethod || 'Cash on Delivery'}
+                            </Typography>
+                          </Paper>
+                        </Grid>
+                        
+                        {/* Order Items */}
+                        <Grid item xs={12} md={6}>
+                          <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, color: 'primary.main' }}>
+                              Order Items
+                            </Typography>
+                            {order.orderItems && order.orderItems.length > 0 ? (
+                              <Table size="small">
+                                <TableHead>
+                                  <TableRow>
+                                    <TableCell><strong>Product</strong></TableCell>
+                                    <TableCell align="right"><strong>Qty</strong></TableCell>
+                                    <TableCell align="right"><strong>Price</strong></TableCell>
+                                    <TableCell align="right"><strong>Total</strong></TableCell>
+                                  </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                  {order.orderItems.map((item, idx) => (
+                                    <TableRow key={idx}>
+                                      <TableCell>{item.product?.name || 'Product'}</TableCell>
+                                      <TableCell align="right">{item.quantity}</TableCell>
+                                      <TableCell align="right">{formatCurrency(item.price)}</TableCell>
+                                      <TableCell align="right">{formatCurrency(item.price * item.quantity)}</TableCell>
+                                    </TableRow>
+                                  ))}
+                                  <TableRow>
+                                    <TableCell colSpan={3} align="right" sx={{ fontWeight: 700 }}>
+                                      Total Amount:
+                                    </TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 700, color: 'success.main' }}>
+                                      {formatCurrency(order.totalAmount)}
+                                    </TableCell>
+                                  </TableRow>
+                                </TableBody>
+                              </Table>
+                            ) : (
+                              <Typography variant="body2" color="text.secondary">
+                                No items found
+                              </Typography>
+                            )}
+                          </Paper>
+                        </Grid>
+                      </Grid>
+                    </Box>
+                  </Collapse>
+                </TableCell>
+              </TableRow>
+            </React.Fragment>
             ))}
             {displayOrders.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} align="center">
+                <TableCell colSpan={8} align="center">
                   <Typography color="textSecondary" sx={{ py: 3 }}>
                     No orders found in this category
                   </Typography>
