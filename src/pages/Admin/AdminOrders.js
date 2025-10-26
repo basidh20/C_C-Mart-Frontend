@@ -25,6 +25,7 @@ import {
   Collapse,
   Alert,
   CircularProgress,
+  AlertTitle,
 } from '@mui/material';
 import {
   Visibility,
@@ -35,6 +36,7 @@ import {
   CheckCircle,
   Cancel,
   Pending,
+  Refresh,
 } from '@mui/icons-material';
 import { ordersAPI } from '../../services/api';
 import { formatCurrency, formatDate, getStatusColor } from '../../theme/sharedStyles';
@@ -68,11 +70,16 @@ function AdminOrders() {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const response = await ordersAPI.getAll();
-      setOrders(response.data);
+      console.log('Fetching orders from backend...');
+      const response = await ordersAPI.getAllOrders();
+      console.log('Orders response:', response.data);
+      setOrders(response.data || []);
+      toast.success(`Loaded ${response.data?.length || 0} orders`);
     } catch (error) {
       console.error('Error fetching orders:', error);
-      toast.error('Failed to fetch orders');
+      console.error('Error details:', error.response?.data);
+      toast.error(error.response?.data?.message || 'Failed to fetch orders');
+      setOrders([]);
     } finally {
       setLoading(false);
     }
@@ -92,12 +99,14 @@ function AdminOrders() {
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      await ordersAPI.updateStatus(orderId, newStatus);
+      console.log(`Updating order ${orderId} status to ${newStatus}`);
+      await ordersAPI.updateOrderStatus(orderId, { status: newStatus });
       toast.success('Order status updated successfully');
       fetchOrders();
     } catch (error) {
       console.error('Error updating order status:', error);
-      toast.error('Failed to update order status');
+      console.error('Error details:', error.response?.data);
+      toast.error(error.response?.data?.message || 'Failed to update order status');
     }
   };
 
@@ -141,14 +150,35 @@ function AdminOrders() {
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>
-          📦 Order Management
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Manage and track all customer orders
-        </Typography>
+      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box>
+          <Typography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>
+            📦 Order Management
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Manage and track all customer orders
+          </Typography>
+        </Box>
+        <Button
+          variant="contained"
+          startIcon={<Refresh />}
+          onClick={fetchOrders}
+          disabled={loading}
+        >
+          Refresh
+        </Button>
       </Box>
+
+      {/* Debug/Status Info */}
+      {orders.length === 0 && !loading && (
+        <Alert severity="warning" sx={{ mb: 3 }}>
+          <AlertTitle>No Orders Found</AlertTitle>
+          There are currently no orders in the system. 
+          {' '}Make sure you're logged in as an admin and the backend is connected properly.
+          <br />
+          <strong>Backend URL:</strong> {process.env.REACT_APP_API_URL || 'https://c-c-mart-backend-production.up.railway.app/api'}
+        </Alert>
+      )}
 
       {/* Statistics Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
