@@ -148,11 +148,29 @@ function AdminOrderManagement() {
     }
   };
 
-  const toggleRowExpansion = (orderId) => {
+  const toggleRowExpansion = async (orderId) => {
     const order = orders.find(o => o.id === orderId);
     console.log('Expanding order:', orderId);
     console.log('Order data:', order);
     console.log('Order items:', order?.orderItems);
+    
+    // If expanding and no items loaded, try to fetch order details
+    if (!expandedRows[orderId] && (!order?.orderItems || order.orderItems.length === 0)) {
+      try {
+        console.log('Fetching detailed order info for order:', orderId);
+        const response = await ordersAPI.getOrder(orderId);
+        console.log('Detailed order response:', response.data);
+        
+        // Update the order in the list with detailed info
+        setOrders(prevOrders => 
+          prevOrders.map(o => 
+            o.id === orderId ? { ...o, orderItems: response.data.orderItems || [] } : o
+          )
+        );
+      } catch (error) {
+        console.error('Error fetching order details:', error);
+      }
+    }
     
     setExpandedRows(prev => ({
       ...prev,
