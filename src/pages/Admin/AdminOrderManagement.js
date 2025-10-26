@@ -68,6 +68,7 @@ function AdminOrderManagement() {
       const response = await ordersAPI.getAllOrders();
       // Ensure response.data is an array
       const ordersData = Array.isArray(response.data) ? response.data : [];
+      console.log('Sample order user data:', ordersData[0]?.user);
       setOrders(ordersData);
       setLoading(false);
     } catch (err) {
@@ -434,7 +435,7 @@ function AdminOrderManagement() {
                                     Phone:
                                   </Typography>
                                   <Typography variant="body1">
-                                    {order.user?.phone || 'N/A'}
+                                    {order.user?.phone || order.user?.phoneNumber || order.user?.contactNumber || order.phoneNumber || 'N/A'}
                                   </Typography>
                                 </Box>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
