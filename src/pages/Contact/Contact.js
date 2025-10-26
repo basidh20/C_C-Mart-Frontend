@@ -25,7 +25,6 @@ import {
   Instagram,
   CheckCircle,
   SupportAgent,
-  QuestionAnswer,
 } from '@mui/icons-material';
 
 function Contact() {
@@ -77,21 +76,6 @@ function Contact() {
       title: 'Home Delivery',
       description: 'Fast and reliable delivery service to your doorstep. Quality products delivered fresh.',
       features: ['Same-day delivery', 'Multiple delivery zones', 'Track your order'],
-    },
-  ];
-
-  const faqs = [
-    {
-      question: 'What are your delivery charges?',
-      answer: 'Free delivery for orders above Rs. 2,500. Below that, delivery charge is Rs. 200.',
-    },
-    {
-      question: 'Do you accept card payments?',
-      answer: 'Yes! We accept Visa, MasterCard, and mobile payment apps.',
-    },
-    {
-      question: 'Can I return products?',
-      answer: 'Yes, you can return any product within 24 hours if you\'re not satisfied.',
     },
   ];
 
@@ -315,53 +299,6 @@ function Contact() {
                     </List>
                   </CardContent>
                 </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
-
-        {/* FAQ Section */}
-        <Box sx={{ mb: 10 }}>
-          <Typography 
-            variant="h3" 
-            component="h2" 
-            textAlign="center" 
-            gutterBottom
-            sx={{ fontWeight: 700, mb: 2 }}
-          >
-            Frequently Asked Questions
-          </Typography>
-          <Typography 
-            variant="body1" 
-            textAlign="center" 
-            sx={{ mb: 6, opacity: 0.7 }}
-          >
-            Quick answers to common questions
-          </Typography>
-          
-          <Grid container spacing={3} justifyContent="center">
-            {faqs.map((faq, index) => (
-              <Grid item xs={12} md={6} key={index}>
-                <Paper 
-                  elevation={2}
-                  sx={{ 
-                    p: 3,
-                    transition: 'all 0.3s',
-                    '&:hover': {
-                      boxShadow: 6,
-                    },
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'start', mb: 1 }}>
-                    <QuestionAnswer color="primary" sx={{ mr: 2, mt: 0.5 }} />
-                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                      {faq.question}
-                    </Typography>
-                  </Box>
-                  <Typography variant="body2" color="text.secondary" sx={{ ml: 5, lineHeight: 1.7 }}>
-                    {faq.answer}
-                  </Typography>
-                </Paper>
               </Grid>
             ))}
           </Grid>
