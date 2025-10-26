@@ -283,7 +283,7 @@ function AdminOrderManagement() {
               <TableCell />
               <TableCell><strong>Order ID</strong></TableCell>
               <TableCell><strong>Customer</strong></TableCell>
-              <TableCell><strong>Total (incl. Delivery)</strong></TableCell>
+              <TableCell><strong>Total</strong></TableCell>
               <TableCell><strong>Status</strong></TableCell>
               <TableCell><strong>Delivery Agent</strong></TableCell>
               <TableCell><strong>Date</strong></TableCell>
@@ -324,7 +324,7 @@ function AdminOrderManagement() {
                       {order.user?.email || 'N/A'}
                     </Typography>
                   </TableCell>
-                  <TableCell>{formatCurrency((order.totalAmount || 0) + 200)}</TableCell>
+                  <TableCell>{formatCurrency(order.totalAmount || 0)}</TableCell>
                   <TableCell>
                     <Chip
                       label={order.status.replace('_', ' ').toUpperCase()}
@@ -479,20 +479,12 @@ function AdminOrderManagement() {
                                         </TableRow>
                                       ))}
                                       <TableRow>
-                                        <TableCell colSpan={3} align="right"><strong>Subtotal:</strong></TableCell>
-                                        <TableCell align="right"><strong>{formatCurrency(order.totalAmount || 0)}</strong></TableCell>
-                                      </TableRow>
-                                      <TableRow>
-                                        <TableCell colSpan={3} align="right"><strong>Delivery Fee:</strong></TableCell>
-                                        <TableCell align="right"><strong>{formatCurrency(200)}</strong></TableCell>
-                                      </TableRow>
-                                      <TableRow>
                                         <TableCell colSpan={3} align="right">
                                           <Typography variant="h6">Total:</Typography>
                                         </TableCell>
                                         <TableCell align="right">
                                           <Typography variant="h6" color="primary">
-                                            {formatCurrency((order.totalAmount || 0) + 200)}
+                                            {formatCurrency(order.totalAmount || 0)}
                                           </Typography>
                                         </TableCell>
                                       </TableRow>
@@ -505,7 +497,7 @@ function AdminOrderManagement() {
                                     No items found for this order
                                   </Typography>
                                   <Typography variant="caption" color="text.secondary">
-                                    Order ID: {order.id} | Total: {formatCurrency((order.totalAmount || 0) + 200)}
+                                    Order ID: {order.id} | Total: {formatCurrency(order.totalAmount || 0)}
                                   </Typography>
                                 </Box>
                               )}
