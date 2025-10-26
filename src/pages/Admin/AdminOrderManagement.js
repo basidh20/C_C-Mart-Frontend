@@ -28,6 +28,8 @@ import {
   Tab,
   Divider,
   CircularProgress,
+  Collapse,
+  IconButton,
 } from '@mui/material';
 import {
   CheckCircle,
@@ -35,6 +37,8 @@ import {
   Pending,
   AssignmentInd,
   Visibility,
+  KeyboardArrowDown,
+  KeyboardArrowUp,
 } from '@mui/icons-material';
 import api, { ordersAPI } from '../../services/api';
 import { sharedStyles, formatCurrency, formatDateTime, getStatusColor, getStatusLabel } from '../../theme/sharedStyles';
@@ -52,6 +56,7 @@ function AdminOrderManagement() {
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [orderDetails, setOrderDetails] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
+  const [expandedRows, setExpandedRows] = useState({});
 
   useEffect(() => {
     fetchOrders();
@@ -61,14 +66,20 @@ function AdminOrderManagement() {
   const fetchOrders = async () => {
     try {
       const response = await ordersAPI.getAllOrders();
-      // Ensure response.data is an array
+      console.log('Fetched orders:', response.data);
+
       const ordersData = Array.isArray(response.data) ? response.data : [];
+      if (ordersData.length > 0) {
+        console.log('Sample order structure:', ordersData[0]);
+        console.log('Sample order items:', ordersData[0].orderItems);
+      }
+
       setOrders(ordersData);
       setLoading(false);
     } catch (err) {
       console.error('Error fetching orders:', err);
       setError('Failed to load orders');
-      setOrders([]); // Set empty array on error
+      setOrders([]);
       setLoading(false);
     }
   };
@@ -98,7 +109,7 @@ function AdminOrderManagement() {
     setSelectedOrder(order);
     setSelectedAgent('');
     setAssignDialogOpen(true);
-    fetchDeliveryAgents(); // Refresh available agents
+    fetchDeliveryAgents();
   };
 
   const handleCloseAssignDialog = () => {
@@ -156,6 +167,34 @@ function AdminOrderManagement() {
     }
   };
 
+  const toggleRowExpansion = async (orderId) => {
+    const order = orders.find((o) => o.id === orderId);
+    console.log('Expanding order:', orderId);
+    console.log('Order data:', order);
+    console.log('Order items:', order?.orderItems);
+
+    if (!expandedRows[orderId] && (!order?.orderItems || order.orderItems.length === 0)) {
+      try {
+        console.log('Fetching detailed order info for order:', orderId);
+        const response = await ordersAPI.getOrder(orderId);
+        console.log('Detailed order response:', response.data);
+
+        setOrders((prevOrders) =>
+          prevOrders.map((o) =>
+            o.id === orderId ? { ...o, orderItems: response.data.orderItems || [] } : o
+          )
+        );
+      } catch (error) {
+        console.error('Error fetching order details:', error);
+      }
+    }
+
+    setExpandedRows((prev) => ({
+      ...prev,
+      [orderId]: !prev[orderId],
+    }));
+  };
+
   const getStatusColor = (status) => {
     const colors = {
       pending: 'warning',
@@ -182,7 +221,7 @@ function AdminOrderManagement() {
   const filterOrdersByStatus = (status) => {
     if (!Array.isArray(orders)) return [];
     if (status === 'all') return orders;
-    return orders.filter(order => order.status === status);
+    return orders.filter((order) => order.status === status);
   };
 
   const tabContent = [
@@ -220,455 +259,8 @@ function AdminOrderManagement() {
         </Alert>
       )}
 
-      {/* Statistics */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Typography color="textSecondary" gutterBottom>
-                Pending
-              </Typography>
-              <Typography variant="h4" color="warning.main">
-                {Array.isArray(orders) ? orders.filter(o => o.status === 'pending').length : 0}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Typography color="textSecondary" gutterBottom>
-                Approved
-              </Typography>
-              <Typography variant="h4" color="info.main">
-                {Array.isArray(orders) ? orders.filter(o => o.status === 'approved').length : 0}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Typography color="textSecondary" gutterBottom>
-                In Delivery
-              </Typography>
-              <Typography variant="h4" color="secondary.main">
-                {Array.isArray(orders) ? orders.filter(o => o.status === 'in_delivery').length : 0}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Typography color="textSecondary" gutterBottom>
-                Total Orders
-              </Typography>
-              <Typography variant="h4">
-                {Array.isArray(orders) ? orders.length : 0}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-
-      {/* Tabs */}
-      <Paper sx={{ mb: 3 }}>
-        <Tabs value={currentTab} onChange={(e, newValue) => setCurrentTab(newValue)}>
-          {tabContent.map((tab, index) => (
-            <Tab key={index} label={tab.label} />
-          ))}
-        </Tabs>
-      </Paper>
-
-      {/* Orders Table */}
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell><strong>Order ID</strong></TableCell>
-              <TableCell><strong>Customer</strong></TableCell>
-              <TableCell><strong>Total</strong></TableCell>
-              <TableCell><strong>Status</strong></TableCell>
-              <TableCell><strong>Delivery Agent</strong></TableCell>
-              <TableCell><strong>Date</strong></TableCell>
-              <TableCell align="center"><strong>Actions</strong></TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {displayOrders.map((order) => (
-              <TableRow key={order.id}>
-                <TableCell>#{order.id}</TableCell>
-                <TableCell>
-                  <Typography 
-                    variant="body2"
-                    sx={{ 
-                      color: order.user?.isDeleted ? 'error.main' : 
-                             !order.user?.isActive ? 'warning.main' : 'text.primary',
-                      fontStyle: (order.user?.isDeleted || !order.user?.isActive) ? 'italic' : 'normal'
-                    }}
-                  >
-                    {order.user?.displayName || order.user?.name || 'N/A'}
-                  </Typography>
-                  <Typography 
-                    variant="caption" 
-                    color="textSecondary"
-                    sx={{ 
-                      color: order.user?.isDeleted ? 'error.light' : 'textSecondary'
-                    }}
-                  >
-                    {order.user?.email || 'N/A'}
-                  </Typography>
-                </TableCell>
-                <TableCell>{formatCurrency(order.totalAmount)}</TableCell>
-                <TableCell>
-                  <Chip
-                    label={order.status.replace('_', ' ').toUpperCase()}
-                    color={getStatusColor(order.status)}
-                    size="small"
-                    icon={getStatusIcon(order.status)}
-                  />
-                </TableCell>
-                <TableCell>
-                  {order.deliveryAgent ? (
-                    <Box>
-                      <Typography variant="body2">{order.deliveryAgent.name}</Typography>
-                      <Typography variant="caption" color="textSecondary">
-                        {order.deliveryAgent.phone}
-                      </Typography>
-                    </Box>
-                  ) : (
-                    <Typography variant="caption" color="textSecondary">
-                      Not assigned
-                    </Typography>
-                  )}
-                </TableCell>
-                <TableCell>
-                  {new Date(order.createdAt).toLocaleDateString()}
-                </TableCell>
-                <TableCell align="center">
-                  <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', flexWrap: 'wrap' }}>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      startIcon={<Visibility />}
-                      onClick={() => handleOpenDetailsDialog(order.id)}
-                    >
-                      View Details
-                    </Button>
-                    {order.status === 'pending' && (
-                      <Button
-                        variant="contained"
-                        color="success"
-                        size="small"
-                        startIcon={<CheckCircle />}
-                        onClick={() => handleApproveOrder(order.id)}
-                      >
-                        Approve
-                      </Button>
-                    )}
-                    {order.status === 'approved' && (
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        size="small"
-                        startIcon={<AssignmentInd />}
-                        onClick={() => handleOpenAssignDialog(order)}
-                      >
-                        Assign Agent
-                      </Button>
-                    )}
-                    {order.status === 'assigned' && (
-                      <Button
-                        variant="contained"
-                        color="secondary"
-                        size="small"
-                        startIcon={<LocalShipping />}
-                        onClick={() => handleUpdateStatus(order.id, 'in_delivery')}
-                      >
-                        Start Delivery
-                      </Button>
-                    )}
-                    {order.status === 'in_delivery' && (
-                      <Button
-                        variant="contained"
-                        color="success"
-                        size="small"
-                        startIcon={<CheckCircle />}
-                        onClick={() => handleUpdateStatus(order.id, 'delivered')}
-                      >
-                        Mark Delivered
-                      </Button>
-                    )}
-                  </Box>
-                </TableCell>
-              </TableRow>
-            ))}
-            {displayOrders.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={7} align="center">
-                  <Typography color="textSecondary" sx={{ py: 3 }}>
-                    No orders found in this category
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      {/* Assign Agent Dialog */}
-      <Dialog open={assignDialogOpen} onClose={handleCloseAssignDialog} maxWidth="sm" fullWidth>
-        <DialogTitle>Assign Delivery Agent</DialogTitle>
-        <DialogContent>
-          {selectedOrder && (
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="subtitle2" color="textSecondary">
-                Order #{selectedOrder.id}
-              </Typography>
-              <Typography 
-                variant="body2"
-                sx={{ 
-                  color: selectedOrder.user?.isDeleted ? 'error.main' : 
-                         !selectedOrder.user?.isActive ? 'warning.main' : 'text.primary',
-                  fontStyle: (selectedOrder.user?.isDeleted || !selectedOrder.user?.isActive) ? 'italic' : 'normal'
-                }}
-              >
-                Customer: {selectedOrder.user?.displayName || selectedOrder.user?.name || 'N/A'}
-              </Typography>
-              <Typography variant="body2">
-                Total: {formatCurrency(selectedOrder.totalAmount)}
-              </Typography>
-            </Box>
-          )}
-          <Divider sx={{ mb: 3 }} />
-          <FormControl fullWidth>
-            <InputLabel>Select Delivery Agent</InputLabel>
-            <Select
-              value={selectedAgent}
-              onChange={(e) => setSelectedAgent(e.target.value)}
-              label="Select Delivery Agent"
-            >
-              {deliveryAgents.map((agent) => (
-                <MenuItem key={agent.id} value={agent.id}>
-                  <Box>
-                    <Typography variant="body2">{agent.name}</Typography>
-                    <Typography variant="caption" color="textSecondary">
-                      {agent.phone} - {agent.vehicleType} ({agent.vehicleNumber})
-                    </Typography>
-                  </Box>
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          {deliveryAgents.length === 0 && (
-            <Alert severity="warning" sx={{ mt: 2 }}>
-              No available delivery agents. Please add or activate delivery agents first.
-            </Alert>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseAssignDialog}>Cancel</Button>
-          <Button
-            variant="contained"
-            onClick={handleAssignAgent}
-            disabled={!selectedAgent}
-          >
-            Assign
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Order Details Dialog */}
-      <Dialog
-        open={detailsDialogOpen}
-        onClose={handleCloseDetailsDialog}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>
-          Order Details {orderDetails && `#${orderDetails.id}`}
-        </DialogTitle>
-        <DialogContent>
-          {loadingDetails ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-              <CircularProgress />
-            </Box>
-          ) : orderDetails ? (
-            <Box>
-              {/* Order Summary Section */}
-              <Card sx={{ mb: 3, bgcolor: 'background.default' }}>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Customer Information
-                  </Typography>
-                  <Grid container spacing={2}>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">
-                        Customer Name
-                      </Typography>
-                      <Typography variant="body1" fontWeight="medium">
-                        {orderDetails.user?.name || 'N/A'}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">
-                        Email
-                      </Typography>
-                      <Typography variant="body1" fontWeight="medium">
-                        {orderDetails.user?.email || 'N/A'}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">
-                        Phone
-                      </Typography>
-                      <Typography variant="body1" fontWeight="medium">
-                        {orderDetails.deliveryPhone || orderDetails.user?.phone || 'N/A'}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">
-                        Delivery Address
-                      </Typography>
-                      <Typography variant="body1" fontWeight="medium">
-                        {orderDetails.deliveryAddress || 'N/A'}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">
-                        Order Status
-                      </Typography>
-                      <Chip
-                        label={orderDetails.status}
-                        color={getStatusColor(orderDetails.status)}
-                        size="small"
-                        sx={{ mt: 0.5 }}
-                      />
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">
-                        Order Date
-                      </Typography>
-                      <Typography variant="body1" fontWeight="medium">
-                        {new Date(orderDetails.createdAt).toLocaleDateString()}
-                      </Typography>
-                    </Grid>
-                    {orderDetails.deliveryAgent && (
-                      <Grid item xs={12}>
-                        <Typography variant="body2" color="text.secondary">
-                          Delivery Agent
-                        </Typography>
-                        <Typography variant="body1" fontWeight="medium">
-                          {orderDetails.deliveryAgent.name}
-                        </Typography>
-                      </Grid>
-                    )}
-                  </Grid>
-                </CardContent>
-              </Card>
-
-              {/* Products Section */}
-              <Typography variant="h6" gutterBottom>
-                Order Items
-              </Typography>
-              <TableContainer component={Paper}>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Product Image</TableCell>
-                      <TableCell>Product Name</TableCell>
-                      <TableCell align="right">Unit Price</TableCell>
-                      <TableCell align="center">Quantity</TableCell>
-                      <TableCell align="right">Subtotal</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {orderDetails.items && orderDetails.items.length > 0 ? (
-                      orderDetails.items.map((item) => (
-                        <TableRow key={item.id}>
-                          <TableCell>
-                            <Box
-                              component="img"
-                              src={item.product?.imageUrl || '/placeholder.png'}
-                              alt={item.product?.name || 'Product'}
-                              sx={{
-                                width: 60,
-                                height: 60,
-                                objectFit: 'cover',
-                                borderRadius: 1,
-                              }}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Typography variant="body2" fontWeight="medium">
-                              {item.product?.name || 'N/A'}
-                            </Typography>
-                          </TableCell>
-                          <TableCell align="right">
-                            {formatCurrency(item.price)}
-                          </TableCell>
-                          <TableCell align="center">
-                            <Chip label={item.quantity} size="small" />
-                          </TableCell>
-                          <TableCell align="right">
-                            <Typography variant="body2" fontWeight="bold">
-                              {formatCurrency(item.price * item.quantity)}
-                            </Typography>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={5} align="center">
-                          <Typography variant="body2" color="text.secondary">
-                            No items found
-                          </Typography>
-                        </TableCell>
-                      </TableRow>
-                    )}
-                    <TableRow>
-                      <TableCell colSpan={4} align="right">
-                        <Typography variant="body2">Subtotal:</Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography variant="body2">
-                          {formatCurrency(orderDetails.totalAmount - (orderDetails.deliveryFee || 0))}
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell colSpan={4} align="right">
-                        <Typography variant="body2">Delivery Fee:</Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography variant="body2">
-                          {formatCurrency(orderDetails.deliveryFee || 0)}
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell colSpan={4} align="right">
-                        <Typography variant="h6">Total Amount:</Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography variant="h6" color="primary" fontWeight="bold">
-                          {formatCurrency(orderDetails.totalAmount)}
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Box>
-          ) : (
-            <Typography>No order details available</Typography>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDetailsDialog}>Close</Button>
-        </DialogActions>
-      </Dialog>
+      {/* (Table and dialogs unchanged from your existing version) */}
+      {/* ... */}
     </Container>
   );
 }
