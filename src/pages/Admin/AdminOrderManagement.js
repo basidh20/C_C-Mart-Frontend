@@ -28,6 +28,8 @@ import {
   Tab,
   Divider,
   CircularProgress,
+  Collapse,
+  IconButton,
 } from '@mui/material';
 import {
   CheckCircle,
@@ -35,6 +37,11 @@ import {
   Pending,
   AssignmentInd,
   Visibility,
+  KeyboardArrowDown,
+  KeyboardArrowUp,
+  Phone,
+  Email,
+  Home,
 } from '@mui/icons-material';
 import api, { ordersAPI } from '../../services/api';
 import { sharedStyles, formatCurrency, formatDateTime, getStatusColor, getStatusLabel } from '../../theme/sharedStyles';
@@ -49,6 +56,7 @@ function AdminOrderManagement() {
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [selectedAgent, setSelectedAgent] = useState('');
+  const [expandedRows, setExpandedRows] = useState({});
 
   useEffect(() => {
     fetchOrders();
@@ -132,6 +140,13 @@ function AdminOrderManagement() {
       console.error('Error updating order status:', err);
       setError(err.response?.data || 'Failed to update order status');
     }
+  };
+
+  const toggleRowExpansion = (orderId) => {
+    setExpandedRows(prev => ({
+      ...prev,
+      [orderId]: !prev[orderId]
+    }));
   };
 
   const getStatusColor = (status) => {
@@ -264,9 +279,10 @@ function AdminOrderManagement() {
         <Table>
           <TableHead>
             <TableRow>
+              <TableCell />
               <TableCell><strong>Order ID</strong></TableCell>
               <TableCell><strong>Customer</strong></TableCell>
-              <TableCell><strong>Total</strong></TableCell>
+              <TableCell><strong>Total (incl. Delivery)</strong></TableCell>
               <TableCell><strong>Status</strong></TableCell>
               <TableCell><strong>Delivery Agent</strong></TableCell>
               <TableCell><strong>Date</strong></TableCell>
@@ -275,108 +291,235 @@ function AdminOrderManagement() {
           </TableHead>
           <TableBody>
             {displayOrders.map((order) => (
-              <TableRow key={order.id}>
-                <TableCell>#{order.id}</TableCell>
-                <TableCell>
-                  <Typography 
-                    variant="body2"
-                    sx={{ 
-                      color: order.user?.isDeleted ? 'error.main' : 
-                             !order.user?.isActive ? 'warning.main' : 'text.primary',
-                      fontStyle: (order.user?.isDeleted || !order.user?.isActive) ? 'italic' : 'normal'
-                    }}
-                  >
-                    {order.user?.displayName || order.user?.name || 'N/A'}
-                  </Typography>
-                  <Typography 
-                    variant="caption" 
-                    color="textSecondary"
-                    sx={{ 
-                      color: order.user?.isDeleted ? 'error.light' : 'textSecondary'
-                    }}
-                  >
-                    {order.user?.email || 'N/A'}
-                  </Typography>
-                </TableCell>
-                <TableCell>{formatCurrency(order.totalAmount)}</TableCell>
-                <TableCell>
-                  <Chip
-                    label={order.status.replace('_', ' ').toUpperCase()}
-                    color={getStatusColor(order.status)}
-                    size="small"
-                    icon={getStatusIcon(order.status)}
-                  />
-                </TableCell>
-                <TableCell>
-                  {order.deliveryAgent ? (
-                    <Box>
-                      <Typography variant="body2">{order.deliveryAgent.name}</Typography>
-                      <Typography variant="caption" color="textSecondary">
-                        {order.deliveryAgent.phone}
-                      </Typography>
-                    </Box>
-                  ) : (
-                    <Typography variant="caption" color="textSecondary">
-                      Not assigned
+              <React.Fragment key={order.id}>
+                <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
+                  <TableCell>
+                    <IconButton
+                      size="small"
+                      onClick={() => toggleRowExpansion(order.id)}
+                    >
+                      {expandedRows[order.id] ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+                    </IconButton>
+                  </TableCell>
+                  <TableCell>#{order.id}</TableCell>
+                  <TableCell>
+                    <Typography 
+                      variant="body2"
+                      sx={{ 
+                        color: order.user?.isDeleted ? 'error.main' : 
+                               !order.user?.isActive ? 'warning.main' : 'text.primary',
+                        fontStyle: (order.user?.isDeleted || !order.user?.isActive) ? 'italic' : 'normal'
+                      }}
+                    >
+                      {order.user?.displayName || order.user?.name || 'N/A'}
                     </Typography>
-                  )}
-                </TableCell>
-                <TableCell>
-                  {new Date(order.createdAt).toLocaleDateString()}
-                </TableCell>
-                <TableCell align="center">
-                  <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-                    {order.status === 'pending' && (
-                      <Button
-                        variant="contained"
-                        color="success"
-                        size="small"
-                        startIcon={<CheckCircle />}
-                        onClick={() => handleApproveOrder(order.id)}
-                      >
-                        Approve
-                      </Button>
+                    <Typography 
+                      variant="caption" 
+                      color="textSecondary"
+                      sx={{ 
+                        color: order.user?.isDeleted ? 'error.light' : 'textSecondary'
+                      }}
+                    >
+                      {order.user?.email || 'N/A'}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>{formatCurrency((order.totalAmount || 0) + 200)}</TableCell>
+                  <TableCell>
+                    <Chip
+                      label={order.status.replace('_', ' ').toUpperCase()}
+                      color={getStatusColor(order.status)}
+                      size="small"
+                      icon={getStatusIcon(order.status)}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    {order.deliveryAgent ? (
+                      <Box>
+                        <Typography variant="body2">{order.deliveryAgent.name}</Typography>
+                        <Typography variant="caption" color="textSecondary">
+                          {order.deliveryAgent.phone}
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Typography variant="caption" color="textSecondary">
+                        Not assigned
+                      </Typography>
                     )}
-                    {order.status === 'approved' && (
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        size="small"
-                        startIcon={<AssignmentInd />}
-                        onClick={() => handleOpenAssignDialog(order)}
-                      >
-                        Assign Agent
-                      </Button>
-                    )}
-                    {order.status === 'assigned' && (
-                      <Button
-                        variant="contained"
-                        color="secondary"
-                        size="small"
-                        startIcon={<LocalShipping />}
-                        onClick={() => handleUpdateStatus(order.id, 'in_delivery')}
-                      >
-                        Start Delivery
-                      </Button>
-                    )}
-                    {order.status === 'in_delivery' && (
-                      <Button
-                        variant="contained"
-                        color="success"
-                        size="small"
-                        startIcon={<CheckCircle />}
-                        onClick={() => handleUpdateStatus(order.id, 'delivered')}
-                      >
-                        Mark Delivered
-                      </Button>
-                    )}
-                  </Box>
-                </TableCell>
-              </TableRow>
+                  </TableCell>
+                  <TableCell>
+                    {new Date(order.createdAt).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell align="center">
+                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                      {order.status === 'pending' && (
+                        <Button
+                          variant="contained"
+                          color="success"
+                          size="small"
+                          startIcon={<CheckCircle />}
+                          onClick={() => handleApproveOrder(order.id)}
+                        >
+                          Approve
+                        </Button>
+                      )}
+                      {order.status === 'approved' && (
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          size="small"
+                          startIcon={<AssignmentInd />}
+                          onClick={() => handleOpenAssignDialog(order)}
+                        >
+                          Assign Agent
+                        </Button>
+                      )}
+                      {order.status === 'assigned' && (
+                        <Button
+                          variant="contained"
+                          color="secondary"
+                          size="small"
+                          startIcon={<LocalShipping />}
+                          onClick={() => handleUpdateStatus(order.id, 'in_delivery')}
+                        >
+                          Start Delivery
+                        </Button>
+                      )}
+                      {order.status === 'in_delivery' && (
+                        <Button
+                          variant="contained"
+                          color="success"
+                          size="small"
+                          startIcon={<CheckCircle />}
+                          onClick={() => handleUpdateStatus(order.id, 'delivered')}
+                        >
+                          Mark Delivered
+                        </Button>
+                      )}
+                    </Box>
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={8}>
+                    <Collapse in={expandedRows[order.id]} timeout="auto" unmountOnExit>
+                      <Box sx={{ margin: 2 }}>
+                        <Grid container spacing={3}>
+                          {/* Customer Contact Information */}
+                          <Grid item xs={12} md={6}>
+                            <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
+                              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Email color="primary" /> Customer Contact Information
+                              </Typography>
+                              <Divider sx={{ mb: 2 }} />
+                              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <Typography variant="body2" color="textSecondary" sx={{ minWidth: 80 }}>
+                                    Name:
+                                  </Typography>
+                                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                                    {order.user?.displayName || order.user?.name || 'N/A'}
+                                  </Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <Email fontSize="small" color="action" />
+                                  <Typography variant="body2" color="textSecondary" sx={{ minWidth: 80 }}>
+                                    Email:
+                                  </Typography>
+                                  <Typography variant="body1">
+                                    {order.user?.email || 'N/A'}
+                                  </Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <Phone fontSize="small" color="action" />
+                                  <Typography variant="body2" color="textSecondary" sx={{ minWidth: 80 }}>
+                                    Phone:
+                                  </Typography>
+                                  <Typography variant="body1">
+                                    {order.user?.phone || 'N/A'}
+                                  </Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <Home fontSize="small" color="action" />
+                                  <Typography variant="body2" color="textSecondary" sx={{ minWidth: 80 }}>
+                                    Address:
+                                  </Typography>
+                                  <Typography variant="body1">
+                                    {order.deliveryAddress || order.user?.address || 'N/A'}
+                                  </Typography>
+                                </Box>
+                              </Box>
+                            </Paper>
+                          </Grid>
+
+                          {/* Order Items */}
+                          <Grid item xs={12} md={6}>
+                            <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
+                              <Typography variant="h6" gutterBottom>
+                                Order Items ({order.orderItems?.length || 0} items)
+                              </Typography>
+                              <Divider sx={{ mb: 2 }} />
+                              {order.orderItems && Array.isArray(order.orderItems) && order.orderItems.length > 0 ? (
+                                <TableContainer>
+                                  <Table size="small">
+                                    <TableHead>
+                                      <TableRow>
+                                        <TableCell><strong>Product</strong></TableCell>
+                                        <TableCell align="right"><strong>Qty</strong></TableCell>
+                                        <TableCell align="right"><strong>Price</strong></TableCell>
+                                        <TableCell align="right"><strong>Subtotal</strong></TableCell>
+                                      </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                      {order.orderItems.map((item, idx) => (
+                                        <TableRow key={idx}>
+                                          <TableCell>{item.product?.name || item.productName || 'Product'}</TableCell>
+                                          <TableCell align="right">{item.quantity || 0}</TableCell>
+                                          <TableCell align="right">{formatCurrency(item.price || 0)}</TableCell>
+                                          <TableCell align="right">{formatCurrency((item.price || 0) * (item.quantity || 0))}</TableCell>
+                                        </TableRow>
+                                      ))}
+                                      <TableRow>
+                                        <TableCell colSpan={3} align="right"><strong>Subtotal:</strong></TableCell>
+                                        <TableCell align="right"><strong>{formatCurrency(order.totalAmount || 0)}</strong></TableCell>
+                                      </TableRow>
+                                      <TableRow>
+                                        <TableCell colSpan={3} align="right"><strong>Delivery Fee:</strong></TableCell>
+                                        <TableCell align="right"><strong>{formatCurrency(200)}</strong></TableCell>
+                                      </TableRow>
+                                      <TableRow>
+                                        <TableCell colSpan={3} align="right">
+                                          <Typography variant="h6">Total:</Typography>
+                                        </TableCell>
+                                        <TableCell align="right">
+                                          <Typography variant="h6" color="primary">
+                                            {formatCurrency((order.totalAmount || 0) + 200)}
+                                          </Typography>
+                                        </TableCell>
+                                      </TableRow>
+                                    </TableBody>
+                                  </Table>
+                                </TableContainer>
+                              ) : (
+                                <Box sx={{ py: 2, textAlign: 'center' }}>
+                                  <Typography variant="body2" color="text.secondary">
+                                    No items found for this order
+                                  </Typography>
+                                  <Typography variant="caption" color="text.secondary">
+                                    Order ID: {order.id} | Total: {formatCurrency((order.totalAmount || 0) + 200)}
+                                  </Typography>
+                                </Box>
+                              )}
+                            </Paper>
+                          </Grid>
+                        </Grid>
+                      </Box>
+                    </Collapse>
+                  </TableCell>
+                </TableRow>
+              </React.Fragment>
             ))}
             {displayOrders.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} align="center">
+                <TableCell colSpan={8} align="center">
                   <Typography color="textSecondary" sx={{ py: 3 }}>
                     No orders found in this category
                   </Typography>
